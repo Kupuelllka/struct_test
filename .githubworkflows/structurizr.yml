@@ -1,1 +1,69 @@
+name: Generate Architecture Diagrams
 
+on:
+  push:
+    paths:
+      - '*.dsl'           # Запускать при изменении любого .dsl файла
+      - '**/*.dsl'        # Также включая поддиректории
+  workflow_dispatch:      # Возможность ручного запуска
+
+jobs:
+  export-diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Structurizr CLI
+        run: |
+          wget https://github.com/structurizr/cli/releases/download/latest/structurizr-cli.zip
+          unzip -o structurizr-cli.zip
+          chmod +x structurizr.sh
+          # Проверка установки
+          ./structurizr.sh version || true
+
+      - name: List workspace files
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
+          echo "Looking for DSL files:"
+          find . -name "*.dsl" -type f
+
+      - name: Create diagrams directory
+        run: mkdir -p diagrams
+
+      - name: Export diagrams to PNG
+        run: |
+          # Проверяем наличие workspace.dsl
+          if [ -f "workspace.dsl" ]; then
+            echo "Found workspace.dsl in root directory"
+            ./structurizr.sh export -workspace workspace.dsl -format jpg -output diagrams/
+          elif [ -f "workspace/workspace.dsl" ]; then
+            echo "Found workspace.dsl in workspace directory"
+            ./structurizr.sh export -workspace workspace/workspace.dsl -format jpg -output diagrams/
+          else
+            echo "Searching for any .dsl file..."
+            DSL_FILE=$(find . -name "*.dsl" -type f | head -1)
+            if [ ! -z "$DSL_FILE" ]; then
+              echo "Using DSL file: $DSL_FILE"
+              ./structurizr.sh export -workspace "$DSL_FILE" -format jpg -output diagrams/
+            else
+              echo "No .dsl files found!"
+              exit 1
+            fi
+          fi
+
+      - name: Check generated diagrams
+        run: |
+          echo "Generated diagrams:"
+          ls -la diagrams/ || echo "No diagrams generated"
+
+      - name: Upload diagrams as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: architecture-diagrams
+          path: diagrams/
+          if-no-files-found: error  # Изменено с warn на error для явного указания проблемы
+          compression-level: 6
+          overwrite: true
