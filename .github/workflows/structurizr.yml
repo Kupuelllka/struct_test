@@ -15,7 +15,12 @@ jobs:
 
       - name: Setup Structurizr CLI
         run: |
-          wget https://github.com/structurizr/cli/releases/download/latest/structurizr-cli.zip
+          # Сначала получаем URL последнего релиза
+          LATEST_URL=$(curl -s https://api.github.com/repos/structurizr/cli/releases/latest | grep "browser_download_url.*zip" | cut -d : -f 2,3 | tr -d \")
+          echo "Downloading from: $LATEST_URL"
+          
+          # Скачиваем по правильному URL
+          wget -O structurizr-cli.zip $LATEST_URL
           unzip structurizr-cli.zip
           chmod +x structurizr.sh
 
