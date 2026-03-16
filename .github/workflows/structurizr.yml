@@ -26,7 +26,7 @@ jobs:
 
       - name: Export diagrams to PNG
         run: |
-          ./structurizr.sh export -workspace workspace.dsl -format png -output diagrams/
+          ./structurizr.sh export -workspace workspace.dsl -format jpg -output diagrams/
 
       - name: Upload diagrams as artifacts
         uses: actions/upload-artifact@v4
