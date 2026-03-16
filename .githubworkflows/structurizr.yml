@@ -41,13 +41,13 @@ jobs:
             ./structurizr.sh export -workspace workspace.dsl -format jpg -output diagrams/
           elif [ -f "workspace/workspace.dsl" ]; then
             echo "Found workspace.dsl in workspace directory"
-            ./structurizr.sh export -workspace workspace/workspace.dsl -format png -output diagrams/
+            ./structurizr.sh export -workspace workspace/workspace.dsl -format jpg -output diagrams/
           else
             echo "Searching for any .dsl file..."
             DSL_FILE=$(find . -name "*.dsl" -type f | head -1)
             if [ ! -z "$DSL_FILE" ]; then
               echo "Using DSL file: $DSL_FILE"
-              ./structurizr.sh export -workspace "$DSL_FILE" -format png -output diagrams/
+              ./structurizr.sh export -workspace "$DSL_FILE" -format jpg -output diagrams/
             else
               echo "No .dsl files found!"
               exit 1
