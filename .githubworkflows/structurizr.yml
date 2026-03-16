@@ -38,7 +38,7 @@ jobs:
           # Проверяем наличие workspace.dsl
           if [ -f "workspace.dsl" ]; then
             echo "Found workspace.dsl in root directory"
-            ./structurizr.sh export -workspace workspace.dsl -format png -output diagrams/
+            ./structurizr.sh export -workspace workspace.dsl -format jpg -output diagrams/
           elif [ -f "workspace/workspace.dsl" ]; then
             echo "Found workspace.dsl in workspace directory"
             ./structurizr.sh export -workspace workspace/workspace.dsl -format png -output diagrams/
