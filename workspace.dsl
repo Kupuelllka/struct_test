@@ -1,50 +1,73 @@
-workspace "Пример" "Демонстрация генерации диаграммы" {
+workspace "AI-Powered Application" "Веб-приложение с интеграцией Llama 3 через Ollama" {
 
     model {
-        u = person "Пользователь" "Обычный пользователь системы"
+        user = person "Пользователь" "Конечный пользователь веб-приложения"
         
-        ss = softwareSystem "Программная система" "Наша основная система" {
-            wa = container "Веб-приложение" "Обеспечивает интерфейс для пользователей" "React + Node.js"
-            db = container "База данных" "Хранит все данные системы" "PostgreSQL" {
+        ollama = softwareSystem "Ollama (Llama 3)" "Локально развернутая LLM" {
+            tags "External"
+        }
+        
+        webApp = softwareSystem "AI Web Application" "Позволяет пользователям взаимодействовать с данными через AI" {
+            tags "Internal"
+            
+            spa = container "Single-Page Application" "React / Vue / Angular" "Предоставляет пользовательский интерфейс, общается с бэкендом через API"
+            backend = container "Spring Boot Application" "Java + Spring" "Обрабатывает бизнес-логику, оркестрирует запросы к БД и AI"
+            postgres = container "PostgreSQL Database" "Relational DB" "Хранит пользователей, транзакционные данные и метаданны" {
+                tags "Database"
+            }
+            vectorDb = container "Vector Database" "pgvector / Weaviate / Qdrant" "Хранит векторные эмбеддинги для семантического поиска" {
                 tags "Database"
             }
         }
         
-        u -> ss "Использует систему"
-        u -> ss.wa "Взаимодействует через браузер"
-        ss.wa -> ss.db "Читает и записывает данные"
-        ss.db -> ss.wa "Возвращает результаты"
+        // Связи между элементами
+        user -> webApp "Использует" "HTTPS"
+        webApp -> ollama "Отправляет промпты и получает ответы" "HTTP/REST"
+        
+        user -> spa "Открывает в браузере" "HTTPS"
+        spa -> backend "Делает API вызовы" "JSON/HTTPS"
+        backend -> postgres "Читает/пишет данные" "JDBC/SQL"
+        backend -> vectorDb "Поиск по сходству, сохранение эмбеддингов" "gRPC/HTTP"
+        backend -> ollama "Запросы к LLM (генерация, инференс)" "HTTP/REST"
+        
+        // Связь для RAG (Retrieval Augmented Generation)
+        ollama -> vectorDb "Читает контекст для RAG" "HTTP"
     }
 
     views {
-        systemContext ss "SystemContext" {
+        systemContext webApp "SystemContext" "Контекстная диаграмма" {
             include *
-            autolayout lr
+            autoLayout
         }
-
-        container ss "ContainerDiagram" {
+        
+        container webApp "Containers" "Диаграмма контейнеров" {
             include *
-            autolayout lr
+            autoLayout
         }
-
+        
         styles {
             element "Person" {
-                shape Person
-                background #08427b
-                color #ffffff
+                shape person
+                background "#08427b"
+                color "#ffffff"
             }
             element "SoftwareSystem" {
-                background #1168bd
-                color #ffffff
+                background "#1168bd"
+                color "#ffffff"
+            }
+            element "External" {
+                background "#999999"
+                color "#ffffff"
             }
             element "Container" {
-                background #438dd5
-                color #ffffff
+                shape roundedBox
+                background "#438dd5"
+                color "#ffffff"
             }
             element "Database" {
-                shape Cylinder
-                background #000000
-                color #ffffff
+                shape cylinder
+                background "#f57c00"
+                color "#ffffff"
             }
         }
     }
