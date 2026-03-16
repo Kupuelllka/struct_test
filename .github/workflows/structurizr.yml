@@ -1,0 +1,30 @@
+name: Generate Architecture Diagrams
+
+on:
+  push:
+    paths:
+      - 'workspace.dsl'  # Запускать только при изменении DSL
+  workflow_dispatch:     # Возможность ручного запуска
+
+jobs:
+  export-diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Structurizr CLI
+        run: |
+          wget https://github.com/structurizr/cli/releases/download/latest/structurizr-cli.zip
+          unzip structurizr-cli.zip
+          chmod +x structurizr.sh
+
+      - name: Export diagrams to PNG
+        run: |
+          ./structurizr.sh export -workspace workspace.dsl -format png -output diagrams/
+
+      - name: Upload diagrams as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: architecture-diagrams
+          path: diagrams/
